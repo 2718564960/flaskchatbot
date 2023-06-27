@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat with AI</title>
+    <script>
+    function clearChatHistory() {
+        document.getElementById("chat-history-form").reset();  // 清空表单输入
+
+        // 清空聊天历史显示区域
+        var chatHistoryDiv = document.getElementById("chat-history");
+        while (chatHistoryDiv.firstChild) {
+            chatHistoryDiv.removeChild(chatHistoryDiv.firstChild);
+        }
+
+        // 提交表单
+        document.getElementById("chat-history-form").submit();
+    }
+    </script>
+</head>
+<body>
+    <h1>Chat with AI</h1>
+    <form id="chat-history-form" action="/" method="post">
+        <input type="text" name="user_input" placeholder="Ask a question...">
+        <button type="submit">Submit</button>
+        <button type="button" onclick="clearChatHistory()">Clear History</button>
+    </form>
+
+
+
+    <div class="chat-history">
+        {% for entry in chat_history %}
+            {% if entry[0] == 'User' %}
+                <div class="user-entry">
+                    <p>{{ entry[1] }}</p>
+                </div>
+            {% else %}
+                <div class="ai-entry">
+                    <p>{{ entry[1] }}</p>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</body>
+</html>
