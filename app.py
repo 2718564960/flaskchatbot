@@ -7,7 +7,6 @@ import openai
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here4'
 openai.api_key = 'your_secret_key'
-# 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
 socketio = SocketIO(app)
 
 # 在线用户数
