@@ -2,43 +2,83 @@
 <html>
 <head>
     <title>Chat with AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="../static/css/index.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.min.js"></script>
     <script>
-    function clearChatHistory() {
-        document.getElementById("chat-history-form").reset();  // 清空表单输入
+        // 连接到Socket.IO服务器
+        var socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
 
-        // 清空聊天历史显示区域
-        var chatHistoryDiv = document.getElementById("chat-history");
-        while (chatHistoryDiv.firstChild) {
-            chatHistoryDiv.removeChild(chatHistoryDiv.firstChild);
+        // 监听在线用户数事件
+        socket.on('online_users', function(data) {
+            var onlineCount = data.count;
+            var onlineUsersElement = document.getElementById('online-users');
+            onlineUsersElement.textContent = '免费版本，AI同时思考数量为1。当前在线人数：' + onlineCount;
+        });
+        // 添加用户消息到聊天历史
+        function addUserMessage(message) {
+            var chatHistoryDiv = document.getElementById("chat-history");
+            var entryDiv = document.createElement("div");
+            entryDiv.classList.add("entry", "user-entry");
+            var messageParagraph = document.createElement("p");
+            messageParagraph.textContent = message;
+            entryDiv.appendChild(messageParagraph);
+            chatHistoryDiv.appendChild(entryDiv);
+            scrollToBottom();
         }
 
-        // 提交表单
-        document.getElementById("chat-history-form").submit();
-    }
+        // 回车键提交表单
+        function submitOnEnter(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                var userMessage = document.getElementById("user-input").value;
+                document.getElementById("chat-history-form").submit();
+                addUserMessage(userMessage);
+                document.getElementById("user-input").value = "";
+            }
+        }
+
+        // 滚动到聊天历史底部
+        function scrollToBottom() {
+            var chatHistoryDiv = document.getElementById("chat-history");
+            chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
+        }
+
+        // 页面加载完成时滚动到聊天历史底部
+        window.onload = function () {
+            scrollToBottom();
+        }
     </script>
 </head>
 <body>
-    <h1>Chat with AI</h1>
-    <form id="chat-history-form" action="/" method="post">
-        <input type="text" name="user_input" placeholder="Ask a question...">
-        <button type="submit">Submit</button>
-        <button type="button" onclick="clearChatHistory()">Clear History</button>
-    </form>
-
-
-
-    <div class="chat-history">
-        {% for entry in chat_history %}
-            {% if entry[0] == 'User' %}
-                <div class="user-entry">
-                    <p>{{ entry[1] }}</p>
-                </div>
-            {% else %}
-                <div class="ai-entry">
-                    <p>{{ entry[1] }}</p>
-                </div>
-            {% endif %}
-        {% endfor %}
+    <div class="container">
+        <h1>让每个人都可以方便的使用 AI</h1>
+        <div id="online-users">当前在线人数：</div>
+        <div class="chat-history" id="chat-history">
+            {% for entry in chat_history %}
+                {% if entry[0] == 'User' %}
+                    <div class="entry user-entry">
+                        <p>{{ entry[1] }}</p>
+                    </div>
+                {% else %}
+                    <div class="entry ai-entry">
+                        <p class="ai-message">{{ entry[1] }}</p>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    <div class="input-container">
+        <form id="chat-history-form" action="/" method="post">
+            <input type="text" id="user-input" name="user_input" placeholder="提问...祝生活愉快" onkeydown="submitOnEnter(event)" autocomplete="off">
+            <button type="submit" class="submit-button">提交</button>
+        </form>
+        <form method="POST" action="/button_clicked">
+            <button type="submit" class="clear-button">清除</button>
+        </form>
+    </div>
+    <div class="support-link">
+        <a href="/supportme">支持&意见</a>
     </div>
 </body>
 </html>
