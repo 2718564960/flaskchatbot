@@ -4,17 +4,17 @@
     <title>Chat with AI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel="stylesheet" type="text/css" href="../static/css/index.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.min.js"></script>
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.min.js"></script>#}
     <script>
-        // 连接到Socket.IO服务器
-        var socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
-
-        // 监听在线用户数事件
-        socket.on('online_users', function(data) {
-            var onlineCount = data.count;
-            var onlineUsersElement = document.getElementById('online-users');
-            onlineUsersElement.textContent = '免费版本，AI同时思考数量为1。当前在线人数：' + onlineCount;
-        });
+        {#// 连接到Socket.IO服务器#}
+        {#var socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');#}
+        {##}
+        {#// 监听在线用户数事件#}
+        {#socket.on('online_users', function(data) {#}
+        {#    var onlineCount = data.count;#}
+        {#    var onlineUsersElement = document.getElementById('online-users');#}
+        {#    onlineUsersElement.textContent = '免费版本，AI同时思考数量为1。回答数量：' + onlineCount;#}
+        {#});#}
         // 添加用户消息到聊天历史
         function addUserMessage(message) {
             var chatHistoryDiv = document.getElementById("chat-history");
@@ -53,7 +53,7 @@
 <body>
     <div class="container">
         <h1>让每个人都可以方便的使用 AI</h1>
-        <div id="online-users">当前在线人数：</div>
+{#        <div id="online-users">回答数量：</div>#}
         <div class="chat-history" id="chat-history">
             {% for entry in chat_history %}
                 {% if entry[0] == 'User' %}

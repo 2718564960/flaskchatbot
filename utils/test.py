@@ -1,42 +1,27 @@
 import time
-from datetime import datetime
-import openai
-
-api_keys = ['sk-0XZzmWvuRBPwbukUrG']
-
-api_key_counts = {key: {'count': 0, 'last_used': None} for key in api_keys}
-
-def get_api_key():
-    current_time = time.time()
-    for key in api_keys:
-        count = api_key_counts[key]['count']
-        last_used = api_key_counts[key]['last_used']
-        if count < 4 or (count == 4 and current_time - last_used >= 61):
-            api_key_counts[key]['count'] += 1
-            api_key_counts[key]['last_used'] = current_time
-            return key
-
-def get_completion_from_messages(messages,
-                                 model="gpt-3.5-turbo-0613",
-                                 temperature=0.8, max_tokens=500):
-    api_key = get_api_key()
-    openai.api_key = api_key
-
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
-
-    return response.choices[0].message["content"]
+def calculate_response_time(current_time, time_list_history=[], interval_time=60, threshold=3):
+    if len(time_list_history) > threshold:
+        raise ValueError(f"列表长度超过{threshold}")
+    if len(time_list_history) == 0:
+        return True, [current_time], 0
+    if current_time - time_list_history[len(time_list_history)-1] > interval_time:
+        return True, [current_time], 0
+    elif len(time_list_history) < threshold:
+        time_list_history[len(time_list_history)] = current_time
+        return True, time_list_history, 0
+    if len(time_list_history) == threshold:
+        if current_time - time_list_history[0] > interval_time:
+            time_list_history.pop(0)
+            time_list_history.append(current_time)
+            return True, time_list_history, 0
+        else:
+            wait_time = current_time - time_list_history[0]
+            time_list_history.pop(0)
+            time_list_history.append(current_time)
+            return False, time_list_history, wait_time
 
 
-# 使用示例
-messages = [
-    {"role": "user", "content": "Who won the World Series in 2020?"}
-]
-for i in range(12):
-    print(time.localtime(time.time()))
-    completion = get_completion_from_messages(messages)
-    print(completion)
+time_list_history = [1688377616,1688377617,1688377618]
+
+
+print(calculate_response_time(1688377650,time_list_history))
