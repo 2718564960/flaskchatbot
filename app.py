@@ -53,6 +53,31 @@ def chat():
 def donate():
     return render_template('supportme.html')
 
+@app.route('/completion')
+def completion():
+    user_input = request.form.get('user_input')
+    if not user_input:
+        return {'code': 1, 'data': 'user_input can not be empty'}
+
+    chat_history = session['chat_history']
+    chat_history.append(('User', user_input))  # 存储用户输入
+
+    context = session['context_history']
+    context.append({'role': 'user', 'content': f"{user_input}"})
+
+    response = OpenAIUtils.get_completion_from_messages(context)
+
+    context.append({'role': 'assistant', 'content': f"{response}"})
+    chat_history.append(('AI', response))  # 存储AI回答
+
+    return {'code': 0, 'data': response}
+
+@app.route('/chat-history')
+def chat_history():
+    chat_history = session['chat_history']
+    return {'code': 0, 'data': chat_history}
+
+
 # @socketio.on('connect', namespace='/chat')
 # def test_connect():
 #     global online_users
