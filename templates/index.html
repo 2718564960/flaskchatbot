@@ -5,79 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel="stylesheet" type="text/css" href="../static/css/index.css">
 {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.min.js"></script>#}
-    <script src="../static/js/jquery-3.7.0.min.js"></script>
-    <script type="text/javascript">
-      $(() => {
-        const getAllHistory = () => {
-            $.ajax({
-              url: '/chat-history',
-              success: (response) => {
-                console.log(response);
-              }
-            });
-        }
-        const completion = (query, callback) => {
-          $.ajax({
-            url: '/completion',
-            data: {user_input: query},
-            success: (response) => {
-              callback && callback(response);
-            }
-          });
-        }
-        const bindInput = () => {
-
-          const $input = $('#user-input');
-          const cb = () => {
-            const query = $input.val();
-            if(!query){return}
-            $input.val('');
-            addMessage(query, 'user');
-            completion(query, (response) => {
-              addMessage(response.data, 'ai', true);
-              scrollToBottom();
-            });
-          }
-
-          $('#user-input-btn').on('click', cb);
-          $input.on('keydown', (event) => {
-            if(event.key === 'Enter'){cb()}
-          });
-        }
-
-        // 滚动到聊天历史底部
-        const scrollToBottom = () => {
-            const dom = $('#chat-history');
-            dom.scrollTop(dom[0].scrollHeight);
-        }
-
-        const addMessage = (message, type, isTypewriter) => {
-            const chatHistoryDiv = $('#chat-history');
-            const newDom = $('<div class="entry"><p></p></div>');
-            if(type == 'ai'){
-              newDom.addClass('ai-entry')
-            } else {
-              newDom.addClass('user-entry')
-            }
-            chatHistoryDiv.append(newDom);
-            const textDom = newDom.children('p').first();
-            if(!isTypewriter){
-              textDom.text(message);
-              return;
-            }
-            const show = (index) => {
-              if(index > message.length){return}
-              textDom.text(message.slice(0, index));
-              setTimeout(() => {
-                show(index+1);
-              }, 100);
-            }
-            show(0);
-        }
-
-        bindInput();
-      });
-    </script>
     <script>
         {#// 连接到Socket.IO服务器#}
         {#var socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');#}
@@ -88,6 +15,39 @@
         {#    var onlineUsersElement = document.getElementById('online-users');#}
         {#    onlineUsersElement.textContent = '免费版本，AI同时思考数量为1。回答数量：' + onlineCount;#}
         {#});#}
+        // 添加用户消息到聊天历史
+        function addUserMessage(message) {
+            var chatHistoryDiv = document.getElementById("chat-history");
+            var entryDiv = document.createElement("div");
+            entryDiv.classList.add("entry", "user-entry");
+            var messageParagraph = document.createElement("p");
+            messageParagraph.textContent = message;
+            entryDiv.appendChild(messageParagraph);
+            chatHistoryDiv.appendChild(entryDiv);
+            scrollToBottom();
+        }
+
+        // 回车键提交表单
+        function submitOnEnter(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                var userMessage = document.getElementById("user-input").value;
+                document.getElementById("chat-history-form").submit();
+                addUserMessage(userMessage);
+                document.getElementById("user-input").value = "";
+            }
+        }
+
+        // 滚动到聊天历史底部
+        function scrollToBottom() {
+            var chatHistoryDiv = document.getElementById("chat-history");
+            chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
+        }
+
+        // 页面加载完成时滚动到聊天历史底部
+        window.onload = function () {
+            scrollToBottom();
+        }
     </script>
 </head>
 <body>
@@ -109,10 +69,10 @@
         </div>
     </div>
     <div class="input-container">
-        <div id="chat-history-form">
-            <input type="text" id="user-input" name="user_input" placeholder="提问...祝生活愉快" autocomplete="off" />
-            <button id="user-input-btn" type="submit" class="submit-button">提交</button>
-        </div>
+        <form id="chat-history-form" action="/" method="post">
+            <input type="text" id="user-input" name="user_input" placeholder="提问...祝生活愉快" onkeydown="submitOnEnter(event)" autocomplete="off">
+            <button type="submit" class="submit-button">提交</button>
+        </form>
         <form method="POST" action="/button_clicked">
             <button type="submit" class="clear-button">清除</button>
         </form>

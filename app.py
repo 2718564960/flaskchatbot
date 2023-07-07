@@ -7,7 +7,7 @@ import openai
 # 创建Flask应用程序
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here4'
-openai.api_key = ''
+openai.api_key = 'your_secret_key'
 socketio = SocketIO(app)
 
 # 在线用户数
@@ -52,34 +52,6 @@ def chat():
 @app.route('/supportme')
 def donate():
     return render_template('supportme.html')
-
-@app.route('/completion')
-def completion():
-    user_input = request.args.get('user_input')
-    if not user_input:
-        return {'code': 1, 'data': 'user_input can not be empty'}
-
-    if 'chat_history' not in session: session['chat_history'] = []
-    if 'context_history' not in session: session['context_history'] = []
-
-    chat_history = session['chat_history']
-    chat_history.append(('User', user_input))  # 存储用户输入
-
-    context = session['context_history']
-    context.append({'role': 'user', 'content': f"{user_input}"})
-
-    response = OpenAIUtils.get_completion_from_messages(context)
-
-    context.append({'role': 'assistant', 'content': f"{response}"})
-    chat_history.append(('AI', response))  # 存储AI回答
-
-    return {'code': 0, 'data': response}
-
-@app.route('/chat-history')
-def chat_history():
-    chat_history = session['chat_history']
-    return {'code': 0, 'data': chat_history}
-
 
 # @socketio.on('connect', namespace='/chat')
 # def test_connect():
